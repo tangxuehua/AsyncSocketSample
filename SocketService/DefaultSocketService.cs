@@ -45,7 +45,7 @@ namespace SocketService
         {
             var receiveState = (ReceiveState)asyncResult.AsyncState;
             var sourceSocket = receiveState.SourceSocket;
-            var stringBuilder = receiveState.StringBuilder;
+            var data = receiveState.Data;
             var bytesRead = 0;
 
             try
@@ -71,18 +71,21 @@ namespace SocketService
                 }
                 else
                 {
-                    stringBuilder.Append(Encoding.ASCII.GetString(receiveState.Buffer, 0, bytesRead));
-                    if (receiveState.StringBuilder.Length < receiveState.MessageSize.Value)
+                    for (var index = 0; index < bytesRead; index++)
                     {
-                        var remainSize = receiveState.MessageSize.Value - stringBuilder.Length;
+                        data.Add(receiveState.Buffer[index]);
+                    }
+                    if (receiveState.Data.Count < receiveState.MessageSize.Value)
+                    {
+                        var remainSize = receiveState.MessageSize.Value - receiveState.Data.Count;
                         var size = remainSize <= ReceiveState.BufferSize ? remainSize : ReceiveState.BufferSize;
                         ReceiveInternal(receiveState, size);
                     }
                     else
                     {
-                        receiveState.MessageReceivedCallback(stringBuilder.ToString());
+                        receiveState.MessageReceivedCallback(Encoding.ASCII.GetString(data.ToArray()));
                         receiveState.MessageSize = null;
-                        receiveState.StringBuilder.Clear();
+                        receiveState.Data.Clear();
                         ReceiveInternal(receiveState, 4);
                     }
                 }

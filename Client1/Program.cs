@@ -9,7 +9,7 @@ namespace Client1
     class Program
     {
         private static ManualResetEvent _signal = new ManualResetEvent(false);
-        private const int TotalCount = 100000;
+        private const int TotalCount = 10;
         private static int _currentReceived = 0;
         private const string SampleMessage = "hello1";
 
@@ -18,11 +18,7 @@ namespace Client1
             var client = new ClientSocket().Connect("127.0.0.1", 11000).Start((reply) =>
             {
                 _currentReceived++;
-                //Console.WriteLine("received: {0}", reply);
-                if (_currentReceived % 10000 == 0)
-                {
-                    Console.WriteLine(_currentReceived);
-                }
+                Console.WriteLine("received: {0}", reply);
                 if (_currentReceived == TotalCount)
                 {
                     _signal.Set();
@@ -35,7 +31,7 @@ namespace Client1
             {
                 client.SendMessage(SampleMessage, (messageContent) =>
                 {
-                    //Console.WriteLine("sent:{0}", messageContent);
+                    Console.WriteLine("sent:{0}", messageContent);
                 });
             }
 
